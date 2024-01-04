@@ -4,121 +4,16 @@
   <meta charset="UTF-8">
   <title>Washing Machine Slot Booking</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f4f4f4;
-      margin: 0;
-      padding: 0;
-    }
-
-    .container {
-      max-width: 800px;
-      margin: 20px auto;
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      background-color: #fff;
-      padding: 20px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    }
-
-    .booking-section {
-      flex: 1;
-    }
-
-    form {
-      display: flex;
-      flex-direction: column;
-    }
-
-    label {
-      margin-bottom: 5px;
-    }
-
-    input[type="text"],
-    input[type="date"],
-    select {
-      padding: 8px;
-      margin-bottom: 15px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-    }
-
-    input[type="submit"] {
-      padding: 10px 20px;
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    .booked-slots-section {
-      flex: 1;
-      margin-left: 20px;
-    }
-
-    .booked-slots-section h2 {
-      margin-top: 0;
-    }
-
-    ul {
-      list-style: none;
-      padding: 0;
-    }
-
-    ul li {
-      background-color: #f9f9f9;
-      padding: 15px;
-      border-radius: 10px;
-      margin-bottom: 15px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      transition: transform 0.3s ease-in-out;
-    }
-
-    ul li:hover {
-      transform: translateY(-5px);
-    }
+    /* Your existing CSS styles */
+    /* ... */
   </style>
 </head>
 <body>
 
 <div class="container">
   <div class="booking-section">
-    <h1>Washing Machine Slot Booking</h1>
-    <form id="bookingForm">
-      <label for="name">Name:</label>
-      <input type="text" id="name" name="name" required><br><br>
-
-      <label for="roomNumber">Room Number:</label>
-      <input type="text" id="roomNumber" name="roomNumber" required><br><br>
-
-      <label for="prnLast3Digits">PRN Last 3 Digits:</label>
-      <input type="text" id="prnLast3Digits" name="prnLast3Digits" required pattern="[0-9]{3}" title="Enter the last 3 digits of PRN" maxlength="3"><br><br>
-
-      <label for="date">Select Date:</label>
-      <input type="date" id="date" name="date" required><br><br>
-
-      <label for="time">Select Time Slot:</label>
-      <select id="time" name="time" required>
-        <!-- Updated time slots -->
-        <option id="slot1" value="6AM-7:30AM">6AM - 7:30AM</option>
-        <option id="slot2" value="7:30AM-9AM">7:30AM - 9AM</option>
-        <option id="slot3" value="9AM-10:30AM">9AM - 10:30AM</option>
-        <option id="slot4" value="10:30AM-12PM">10:30AM - 12PM</option>
-        <option id="slot5" value="12PM-1:30PM">12PM - 1:30PM</option>
-        <option id="slot6" value="1:30PM-3PM">1:30PM - 3PM</option>
-        <option id="slot7" value="3PM-4:30PM">3PM - 4:30PM</option>
-        <option id="slot8" value="4:30PM-6PM">4:30PM - 6PM</option>
-        <option id="slot9" value="6PM-7:30PM">6PM - 7:30PM</option>
-        <option id="slot10" value="7:30PM-9PM">7:30PM - 9PM</option>
-        <option id="slot11" value="9PM-10:30PM">9PM - 10:30PM</option>
-        <option id="slot12" value="10:30PM-12AM">10:30PM - 12AM</option>
-        <option id="slot13" value="12AM-1:30AM">12AM - 1:30AM</option>
-      </select><br><br>
-
-      <input type="submit" value="Book Slot">
-    </form>
+    <!-- Your existing form and elements -->
+    <!-- ... -->
   </div>
 
   <div class="booked-slots-section">
@@ -205,6 +100,54 @@
     return `${year}-${month}-${day}`;
   }
 </script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
+<script>
+  // Your web app's Firebase configuration
+  const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_AUTH_DOMAIN",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_STORAGE_BUCKET",
+    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+    appId: "YOUR_APP_ID",
+    measurementId: "YOUR_MEASUREMENT_ID"
+  };
 
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+  document.getElementById('bookingForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+    const name = document.getElementById('name').value;
+    const roomNumber = document.getElementById('roomNumber').value;
+    const prnLast3Digits = document.getElementById('prnLast3Digits').value;
+    const date = document.getElementById('date').value;
+    const time = document.getElementById('time').value;
+
+    const bookedSlot = { name, roomNumber, prnLast3Digits, date, time };
+
+    db.collection("washing-machine-bookings").add(bookedSlot)
+      .then((docRef) => {
+        console.log("Document written with ID: ", docRef.id);
+        document.getElementById('name').value = '';
+        document.getElementById('roomNumber').value = '';
+        document.getElementById('prnLast3Digits').value = '';
+        document.getElementById('date').value = '';
+      })
+      .catch((error) => {
+        console.error("Error adding document: ", error);
+      });
+  });
+
+  db.collection("washing-machine-bookings").onSnapshot((querySnapshot) => {
+    const bookedSlots = [];
+    querySnapshot.forEach((doc) => {
+      bookedSlots.push(doc.data());
+    });
+    renderBookedSlots(bookedSlots);
+  });
+</script>
 </body>
 </html>
